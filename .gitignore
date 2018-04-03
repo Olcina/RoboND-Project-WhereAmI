@@ -48,4 +48,4 @@ CATKIN_IGNORE
 
 
 # Visual code
-catkin_ws/.vscode/
+.vscode/
