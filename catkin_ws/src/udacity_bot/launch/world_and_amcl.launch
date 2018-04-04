@@ -1,5 +1,30 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <launch>
+
+  <arg name="world" default="empty"/> 
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  <!-- launch gazebo  -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find udacity_bot)/worlds/jackal_world.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+  <!-- spawn robot -->
+
+  <include file="$(find udacity_bot)/launch/robot_description.launch"/>  
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" 
+        output="screen" args="-urdf -param robot_description -model udacity_bot"/>
+
+  <!--launch rviz-->
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d /home/olcina/Documents/RoboND/Project2/RoboND-Project-WhereAmI/catkin_ws/src/udacity_bot/rvizAmclConfig.rviz"/>
 
   <!-- Map server -->
   <arg name="map_file" default="$(find udacity_bot)/maps/jackal_race.yaml"/>
@@ -12,34 +37,15 @@
     <param name="odom_model_type" value="diff-corrected"/>
     <param name="base_frame_id" value="robot_footprint"/>
     <param name="global_frame_id" value="map"/>
-
-    <param name="transform_tolerance" value="0.1"/>
-    <param name="resample_interval" value="3"/>
-    <!-- Augmented MCL params for adding random particles -->
-    <param name="recovery_alpha_slow" value="0.001"/>
-    <param name="recovery_alpha_fast" value="0.1"/>
-    <!-- filter update distance/angle -->
-    <param name="update_min_d" value="0.1"/>
-    <param name="update_min_a" value="0.3"/>
-    <!-- KDL-sampling params -->
-    <param name="kld_err" value="0.05"/>
-    <param name="kld_z" value="0.99"/>
-    <!-- efficiency params -->
     <param name="min_particles" value="20"/>
     <param name="max_particles" value="200"/>
-    <!-- initial params -->
-    <!-- <param name="initial_pose_a" value="1"/> -->
-    <!-- <param name="initial_cov_xx" value="5"/>
-    <param name="initial_cov_yy" value="5"/>
-     <param name="initial_cov_aa" value="5"/> -->
-    <!-- odom model params -->
-    <param name="odom_alpha1" value="0.005"/>
-    <param name="odom_alpha2" value="0.005"/>
-    <param name="odom_alpha3" value="0.010"/>
-    <param name="odom_alpha4" value="0.005"/>
-    <param name="odom_alpha5" value="0.003"/>
-
-    
+    <param name="recovery_alpha_slow" value="0.001"/>
+    <param name="recovery_alpha_fast" value="0.1"/>
+    <param name="transform_tolerance" value="0.1"/>
+    <param name="resample_interval" value="3"/>
+    <param name="update_min_d" value="0.05"/>
+    <param name="update_min_a" value="0.05"/>
+    <param name="kld_err" value="0.10"/>
 
   </node>
 
@@ -57,14 +63,6 @@
 
     <param name="base_global_planner" type="string" value="navfn/NavfnROS" />
     <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
-    <!-- <param name="sim_time" value="1.0"/>
-    <param name="meter_scoring" value="true"/>
-    <param name="pdist_scale" value="2.0"/>
-
-    <param name="controller_frequency" value="20"/>
-    <param name="oscillation_reset_dist" value="0.5"/> -->
 
   </node>
-
-
 </launch>
