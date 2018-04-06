@@ -19,26 +19,33 @@
     <param name="recovery_alpha_slow" value="0.001"/>
     <param name="recovery_alpha_fast" value="0.1"/>
     <!-- filter update distance/angle -->
-    <param name="update_min_d" value="0.1"/>
-    <param name="update_min_a" value="0.3"/>
+    <param name="update_min_d" value="0.05"/>
+    <param name="update_min_a" value="0.2"/>
     <!-- KDL-sampling params -->
     <param name="kld_err" value="0.05"/>
     <param name="kld_z" value="0.99"/>
     <!-- efficiency params -->
     <param name="min_particles" value="20"/>
-    <param name="max_particles" value="200"/>
+    <param name="max_particles" value="500"/>
     <!-- initial params -->
     <!-- <param name="initial_pose_a" value="1"/> -->
-    <!-- <param name="initial_cov_xx" value="5"/>
+    <param name="initial_cov_xx" value="5"/>
     <param name="initial_cov_yy" value="5"/>
-     <param name="initial_cov_aa" value="5"/> -->
+    <param name="initial_cov_aa" value="5"/>
     <!-- odom model params -->
-    <param name="odom_alpha1" value="0.005"/>
+    <!-- <param name="odom_alpha1" value="0.005"/>
     <param name="odom_alpha2" value="0.005"/>
     <param name="odom_alpha3" value="0.010"/>
-    <param name="odom_alpha4" value="0.005"/>
-    <param name="odom_alpha5" value="0.003"/>
-
+    <param name="odom_alpha4" value="0.005"/> -->
+    <param name="odom_alpha1" value="0.02"/>
+    <param name="odom_alpha2" value="0.02"/>
+    <param name="odom_alpha3" value="0.02"/>
+    <param name="odom_alpha4" value="0.02"/>
+    <!-- laser params -->
+    <param name="laser_z_hit" value="0.95"/>
+    <param name="laser_sigma_hit" value="0.1"/>
+    <param name="laser_z_rand" value="0.05"/>
+    <param name="laser_likelihood_max_dist" value="2.0"/>
     
 
   </node>
@@ -57,12 +64,12 @@
 
     <param name="base_global_planner" type="string" value="navfn/NavfnROS" />
     <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
-    <!-- <param name="sim_time" value="1.0"/>
+
+    <param name="sim_time" value="3.0"/>
     <param name="meter_scoring" value="true"/>
     <param name="pdist_scale" value="2.0"/>
-
-    <param name="controller_frequency" value="20"/>
-    <param name="oscillation_reset_dist" value="0.5"/> -->
+    <param name="oscillation_reset_dist" value="0.5"/>
+    <param name="controller_frequency" value="10"/>
 
   </node>
 
