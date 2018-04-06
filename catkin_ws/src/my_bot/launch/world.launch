@@ -10,7 +10,8 @@
   <arg name="debug" default="false"/>
   <!-- launch gazebo  -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find my_bot)/worlds/my_world.world"/>
+    <!-- <arg name="world_name" value="$(find my_bot)/worlds/my_world.world"/> -->
+    <arg name="world_name" value="$(find my_bot)/worlds/jackal_world.world"/>
     <arg name="paused" value="$(arg paused)"/>
     <arg name="use_sim_time" value="$(arg use_sim_time)"/>
     <arg name="gui" value="$(arg gui)"/>
@@ -25,5 +26,5 @@
 
   <!--launch rviz-->
 
-  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d /home/olcina/Documents/RoboND/Project2/RoboND-Project-WhereAmI/catkin_ws/src/my_bot/my_bot.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" respawn="false" args="-d /home/olcina/Documents/RoboND/Project2/RoboND-Project-WhereAmI/catkin_ws/src/my_bot/rvizAmclConfig.rviz"/>
 </launch>

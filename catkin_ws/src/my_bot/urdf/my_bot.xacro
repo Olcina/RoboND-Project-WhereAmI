@@ -5,8 +5,22 @@
   <!-- PARAMETERS -->
   <xacro:include filename="$(find my_bot)/urdf/my_bot.gazebo"/>
 
-  <xacro:property name="bodyradius" value="0.25" />
+  <xacro:property name="bodyradius" value="0.3" />
   <xacro:property name="bodylength" value="0.2" />
+  <xacro:property name="casterwheelradius" value="0.05" />
+  <xacro:property name="central_wheel_radius" value="0.15" />
+
+  <!-- MATERIALS -->
+    <material name="blue">
+       <color rgba="0 0 0.8 1"/>
+     </material>
+     <material name="black">
+       <color rgba="0 0 0 1"/>
+     </material>
+     <material name="white">
+       <color rgba="1 1 1 1"/>
+     </material>
+     
 
   <!-- MACROS -->
 
@@ -34,21 +48,47 @@
         <geometry>
           <sphere radius="${radius}"/>
         </geometry>
+        <material name="black"/>
       </visual>
-
   </xacro:macro>
-  <!-- MATERIALS -->
-  <material name="blue">
-       <color rgba="0 0 0.8 1"/>
-     </material>
-     <material name="black">
-       <color rgba="0 0 0 1"/>
-     </material>
-     <material name="white">
-       <color rgba="1 1 1 1"/>
-     </material>
 
+  <!-- wheel macro -->
+  <xacro:macro name="motion_wheel" params="name origin_xyx origin_rpy parent_name mass length radius hinge_origin axis">
+    <link name="${name}_wheel">
+          <inertial>
+          <origin xyz="${origin_xyx}" rpy="${origin_rpy}"/>
+          <mass value="10.0"/>
+          <inertia
+              ixx="0.1" ixy="0" ixz="0"
+              iyy="0.1" iyz="0"
+              izz="0.1"
+          />
+        </inertial>
+        <visual name="${name}_wheel_visual">
+          <origin xyz="${origin_xyx}" rpy="${origin_rpy}"/>
+          <geometry>
+            <cylinder  length="${length}" radius="${radius}"/>
+          </geometry>
+        </visual>
+        <collision name="${name}_wheel_collision">
+          <origin xyz="${origin_xyx}" rpy="${origin_rpy}"/>
+          <geometry>
+          <cylinder  length="${length}" radius="${radius}"/>
+          </geometry>
+        </collision>
+      </link>
+
+      <joint type="continuous" name="${name}_wheel_hinge">
+        <origin xyz="${hinge_origin}" rpy="0 0 0"/>
+        <child link="${name}_wheel"/>
+        <parent link="${parent_name}"/>
+        <axis xyz="${axis}" rpy="0 0 0"/>
+        <limit effort="10000" velocity="1000"/>
+        <joint_properties damping="1.0" friction="1.0"/>
+      </joint>
+  </xacro:macro>
   <link name="robot_footprint"></link>
+
   <joint name="robot_footprint_joint" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="robot_footprint"/>
@@ -58,7 +98,7 @@
 
 <!-- ROBOT STRUCTURE -->
   <link name='chassis'>
-    <pose>0 0 0.15 0 0 0</pose>
+    <pose>0 0 0.1 0 0 0</pose>
 
     <inertial>
       <mass value="10.0"/>
@@ -84,48 +124,120 @@
       </geometry>
     </visual>
     
-  <xacro:caster_wheel name="front" origin="0.15 0 -0.1" radius="0.049"/>
-  <xacro:caster_wheel name="back"  origin="-0.15 0 -0.1" radius="0.049"/>
+  <xacro:caster_wheel name="cw1" origin="${bodyradius-3*casterwheelradius/2} 0 -0.1" radius="${casterwheelradius}"/>
+  <xacro:caster_wheel name="cw2"  origin="-${bodyradius-3*casterwheelradius/2} 0 -0.1" radius="${casterwheelradius}"/>
+  <!-- <xacro:caster_wheel name="cw3"  origin="0 ${bodyradius-3*casterwheelradius/2} -0.1" radius="${casterwheelradius}"/>
+  <xacro:caster_wheel name="cw4"  origin="0 -${bodyradius-3*casterwheelradius/2} -0.1" radius="${casterwheelradius}"/> -->
 
   </link>
+  <xacro:property name="wheelsxval" value="-0.0" />
+  <xacro:motion_wheel name="left"
+                      origin_xyx="0.0 0.0 0.0" 
+                      origin_rpy="0.0 1.5707 1.5707" 
+                      parent_name="chassis"
+                      mass="5.0"
+                      length="0.05" 
+                      radius="0.15" 
+                      hinge_origin="${wheelsxval} ${bodyradius + 0.05} 0" 
+                      axis="0 1 0"/>
+  <xacro:motion_wheel name="right"
+                      origin_xyx="0.0 0.0 0.0" 
+                      origin_rpy="0.0 1.5707 1.5707" 
+                      parent_name="chassis" 
+                      mass="5.0"
+                      length="0.05" 
+                      radius="0.15" 
+                      hinge_origin="${wheelsxval} -${bodyradius + 0.05} 0" 
+                      axis="0 1 0"/>
 
-
-  <link name="central_wheel">
-      <inertial>
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
-      <mass value="5.0"/>
-      <inertia
-          ixx="0.1" ixy="0" ixz="0"
-          iyy="0.1" iyz="0"
-          izz="0.1"
-      />
-    </inertial>
-    <visual name="central_wheel_visual">
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
+  <link name="grip_base">
+    <inertial>
+        <mass value="0.5"/>
+        <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+        <inertia
+            ixx="0.01" ixy="0" ixz="0"
+            iyy="0.01" iyz="0"
+            izz="0.01"
+        />
+      </inertial>
+      <collision name='collision'>
+        <origin xyz="0 0 0" rpy=" 0 0 0"/> 
+        <geometry>
+          <cylinder length="${bodylength-0.1}" radius="${bodyradius-0.1}"/>
+        </geometry>
+      </collision>
+    <visual>
       <geometry>
-        <sphere  radius="0.15" />
+         <cylinder length="${bodylength-0.1}" radius="${bodyradius-0.1}"/>
       </geometry>
-      <material name="blue"/>
+      <material name="white"/>
     </visual>
-    <collision name="central_wheel_collision">
-      <origin xyz="0.0 0.0 0.0" rpy="0.0 1.5707 1.5707"/>
-      <geometry>
-       <sphere  radius="0.15"/>
-      </geometry>
-    </collision>
   </link>
 
-  <joint type="continuous" name="central_wheel_hinge">
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-    <child link="central_wheel"/>
+  <joint name="grip_base_swivel" type="fixed">
     <parent link="chassis"/>
-    <axis xyz="1 1 0" rpy="0 0 0"/>
-    <limit effort="10000" velocity="1000"/>
-    <joint_properties damping="1.0" friction="1.0"/>
+    <child link="grip_base"/>
+    <!-- <axis xyz="0 0 1"/> -->
+    <origin xyz="0 0 ${bodylength-0.1}"/>
   </joint>
 
 
+  <link name="grip_post">
+    <inertial>
+        <mass value="1.0"/>
+        <origin xyz="0.0 0 0" rpy=" 0 0 0"/>
+        <inertia
+            ixx="0.01" ixy="0" ixz="0"
+            iyy="0.01" iyz="0"
+            izz="0.01"
+        />
+      </inertial>
+      <collision name='collision'>
+        <origin xyz="0 0 0" rpy=" 0 0 0"/> 
+        <geometry>
+          <box size="0.01 0.01 0.01"/>
+        </geometry>
+      </collision>
+    <visual>
+      <geometry>
+         <box size="0.1 0.1 0.5"/>
+      </geometry>
+      <material name="white"/>
+    </visual>
+  </link>
 
+    <joint name="base_post_joint" type="fixed">
+    <parent link="grip_base"/>
+    <child link="grip_post"/>
+    
+    <origin xyz="0 0 0.25"/>
+  </joint>
+
+<link name="imu_link">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.1"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+    <visual name="">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </collision>
+  </link>>
+
+  <joint type="fixed" name="imu_joint">
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <child link="imu_link"/>
+    <parent link="chassis"/>
+  </joint>
 
   <link name="camera">
     <inertial>
@@ -149,9 +261,39 @@
 
 
   <joint type="fixed" name="camera_joint">
-    <origin xyz="0.25 0 0" rpy="0 0 0"/>
+    <origin xyz="${bodyradius} 0 0" rpy="0 0 0"/>
     <child link="camera"/>
     <parent link="chassis"/>
+  </joint>
+
+
+   <link name="camera2">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="0.1"/>
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+    </inertial>
+    <visual name="">
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.05 0.05 0.05"/>
+      </geometry>
+    </collision>
+  </link>>
+
+
+  <joint type="fixed" name="camera2_joint">
+    <origin xyz="0.1 0 0.45" rpy="0 0 0"/>
+    <child link="camera2"/>
+    <parent link="grip_post"/>
   </joint>
 
   <link name="hokuyo">
@@ -163,7 +305,7 @@
     <visual name="">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
     <geometry>
-      <mesh filename="package://udacity_bot/meshes/hokuyo.dae"/>
+      <mesh filename="package://my_bot/meshes/hokuyo.dae"/>
     </geometry>
     </visual>
     <collision>
@@ -175,7 +317,7 @@
   </link>
 
   <joint name="hokuyo_joint" type="fixed">
-    <origin xyz="0.15 0.0 0.1" rpy="0.0 0.0 0.0"/>
+    <origin xyz="${bodyradius-0.05} 0.0 ${bodylength/2+0.05}" rpy="0.0 0.0 0.0"/>
     <parent link="chassis"/>
     <child link="hokuyo"/>
   </joint>

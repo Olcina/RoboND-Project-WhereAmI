@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- Map server -->
+  <arg name="map_file" default="$(find my_bot)/maps/jackal_race.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <param name="output_frame" value="odom"/>
+    <param name="base_footprint_frame" value="base_footprint"/>
+    <param name="freq" value="30.0"/>
+    <param name="sensor_timeout" value="1.0"/>  
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="true"/>
+    <param name="vo_used" value="false"/>
+
+    <remap from="imu_data" to="/imu" />    
+
+  </node>
+
+  <!-- Localization-->
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <remap from="scan" to="my_bot/laser/scan"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="odom_model_type" value="diff-corrected"/>
+    <param name="base_frame_id" value="robot_footprint"/>
+    <param name="global_frame_id" value="map"/>
+
+    <param name="transform_tolerance" value="0.1"/>
+    <param name="resample_interval" value="3"/>
+    <!-- Augmented MCL params for adding random particles -->
+    <param name="recovery_alpha_slow" value="0.001"/>
+    <param name="recovery_alpha_fast" value="0.1"/>
+    <!-- filter update distance/angle -->
+    <param name="update_min_d" value="0.05"/>
+    <param name="update_min_a" value="0.2"/>
+    <!-- KDL-sampling params -->
+    <param name="kld_err" value="0.05"/>
+    <param name="kld_z" value="0.99"/>
+    <!-- efficiency params -->
+    <param name="min_particles" value="20"/>
+    <param name="max_particles" value="500"/>
+    <!-- initial params -->
+    <!-- <param name="initial_pose_a" value="1"/> -->
+    <param name="initial_cov_xx" value="0.2"/>
+    <param name="initial_cov_yy" value="0.2"/>
+    <param name="initial_cov_aa" value="0.2"/>
+    <!-- odom model params -->
+    <!-- <param name="odom_alpha1" value="0.005"/>
+    <param name="odom_alpha2" value="0.005"/>
+    <param name="odom_alpha3" value="0.010"/>
+    <param name="odom_alpha4" value="0.005"/> -->
+    <param name="odom_alpha1" value="0.02"/>
+    <param name="odom_alpha2" value="0.02"/>
+    <param name="odom_alpha3" value="0.02"/>
+    <param name="odom_alpha4" value="0.02"/>
+    <!-- laser params -->
+    <param name="laser_z_hit" value="0.95"/>
+    <param name="laser_sigma_hit" value="0.1"/>
+    <param name="laser_z_rand" value="0.05"/>
+    <param name="laser_likelihood_max_dist" value="2.0"/>
+    
+
+  </node>
+
+  <!-- Move base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find my_bot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find my_bot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find my_bot)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find my_bot)/config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find my_bot)/config/base_local_planner_params.yaml" command="load" />
+
+    <remap from="cmd_vel" to="cmd_vel"/>
+    <remap from="odom" to="odom"/>
+    <remap from="scan" to="my_bot/laser/scan"/>
+
+    <param name="base_global_planner" type="string" value="navfn/NavfnROS" />
+    <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
+
+    <param name="sim_time" value="3.0"/>
+    <param name="meter_scoring" value="true"/>
+    <param name="pdist_scale" value="2.0"/>
+    <param name="oscillation_reset_dist" value="0.5"/>
+    <param name="controller_frequency" value="10"/>
+
+  </node>
+
+
+</launch>
